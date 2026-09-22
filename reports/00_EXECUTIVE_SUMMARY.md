@@ -16,13 +16,6 @@ tax-ops exception queue.**
   confidence — the engine itself demotes any line relying on one of these to `OK — VERIFY RATE`
   instead of a clean pass.
 
-## Resume-ready line
-
-*"Built a rules-based indirect-tax classification engine spanning GST, TDS (India), Sales & Use Tax
-(US), and VAT (EU) across 11 jurisdictions and 20 sourced rules; tested against 60 synthetic
-invoice lines with a 33.3% exception-detection rate, independently verified to match the injected
-error rate exactly."*
-
 ## What this is not
 
 Not a real tax filing tool, not trained on or tested against any real vendor data (none exists for

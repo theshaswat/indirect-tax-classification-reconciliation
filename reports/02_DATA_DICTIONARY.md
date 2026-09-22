@@ -11,7 +11,7 @@
 | `condition` | Plain-language scope/threshold for when this rate applies |
 | `source` | The citing authority/report |
 | `as_of_date` | Effective date or date the figure was pulled |
-| `confidence` | `confirmed_this_session` (pulled and checked live) or `stable_fact_verify_before_filing` (well-established but not re-confirmed live) |
+| `confidence` | `source_confirmed` (checked against the cited primary source) or `stable_fact_verify_before_filing` (well-established but not re-confirmed live) |
 
 ## `data/processed/synthetic_invoice_lines.csv`
 

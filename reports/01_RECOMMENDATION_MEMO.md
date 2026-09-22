@@ -19,7 +19,7 @@ India's GST rules reflect the actual 4-slab structure (0% / 5% / 18% / 40%) that
 2025, replacing the older slab-with-cess system — using the pre-reform slabs would have been a real,
 checkable error. No real vendor or transaction data exists anywhere for this project — every invoice
 line is synthetic. Three classification outcomes are possible: `OK` (clean match, confirmed rate),
-`OK — VERIFY RATE` (match, but the underlying rate wasn't independently re-confirmed this session),
+`OK — VERIFY RATE` (match, but the underlying rate wasn't independently re-confirmed for this build),
 `EXCEPTION` (code mismatch, blank code, or no matching rule at all).
 
 ## Results
@@ -50,7 +50,7 @@ plausible-looking wrong number ship.
 ## Limitations
 
 See `LIMITATIONS.md`. In short: 9 of 20 rates are well-established facts not independently
-re-confirmed against a live primary source this session (flagged, not hidden); no real transaction
+re-confirmed against a live primary source for this build (flagged, not hidden); no real transaction
 data exists to validate against; US rates are state-level base only (no local/county add-ons); India
 TDS/withholding rates should be re-checked against the current Finance Act before any real filing
 use, given the ongoing Income-tax Act 2025 renumbering to Section 393.

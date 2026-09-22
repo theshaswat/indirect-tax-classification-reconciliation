@@ -17,5 +17,5 @@ def find_rule(rules: list[dict], jurisdiction: str, category: str) -> list[dict]
 if __name__ == "__main__":
     rules = load_rules()
     print(f"Loaded {len(rules)} rules across {len({r['jurisdiction'] for r in rules})} jurisdictions.")
-    unverified = [r for r in rules if r["confidence"] != "confirmed_this_session"]
-    print(f"{len(unverified)} rows flagged stable_fact_verify_before_filing — not confirmed live this session.")
+    unverified = [r for r in rules if r["confidence"] != "source_confirmed"]
+    print(f"{len(unverified)} rows flagged stable_fact_verify_before_filing — not independently re-confirmed for this build.")

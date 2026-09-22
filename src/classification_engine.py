@@ -38,9 +38,9 @@ def classify(invoices: list[dict], rules: list[dict]) -> list[dict]:
                     f"derived code '{line['correct_tax_code']}' — likely stale code carried "
                     f"over from a different jurisdiction/category"
                 )
-            elif rule["confidence"] != "confirmed_this_session":
+            elif rule["confidence"] != "source_confirmed":
                 status = "OK — VERIFY RATE"
-                reason = "Rate is a stable known fact, not source-confirmed this session; verify before filing"
+                reason = "Rate is a stable known fact, not independently re-confirmed for this build; verify before filing"
 
         results.append({
             **line,

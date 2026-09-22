@@ -179,7 +179,8 @@ def render(md_path, pdf_path, title, max_pages=None, min_scale=0.80):
     while True:
         doc = SimpleDocTemplate(str(pdf_path), pagesize=LETTER, topMargin=0.55 * inch,
                                 bottomMargin=0.62 * inch, leftMargin=0.7 * inch,
-                                rightMargin=0.7 * inch, title=title)
+                                rightMargin=0.7 * inch, title=title,
+                                author="Shaswat Sharma", subject="Independent analysis")
         avail_width = LETTER[0] - doc.leftMargin - doc.rightMargin
         story = build_story(text, avail_width)
         doc.build(story, onFirstPage=_footer, onLaterPages=_footer)

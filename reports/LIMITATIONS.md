@@ -5,7 +5,7 @@
   real tax-ops exception queue, because no such data is available to this project.
 - **9 of 20 rules are `stable_fact_verify_before_filing`.** These are well-established rates (e.g.
   Ireland's 23% VAT, India's TDS section rates) not independently re-confirmed against a live
-  primary source in this session. The engine surfaces this distinction in its own output
+  primary source for this build. The engine surfaces this distinction in its own output
   (`OK — VERIFY RATE`) rather than treating all rates as equally certain.
 - **US rates are state-level base only.** Local county/city add-ons (e.g. Chicago's combined ~10.5%)
   are explicitly out of scope and not modelled.
@@ -14,5 +14,5 @@
   Re-verify section references before any real filing use.
 - **No RCSA, SAP, or tax-engine (Vertex/OneSource) exposure claimed anywhere.** This project
   demonstrates classification logic, not familiarity with any specific enterprise tax software.
-- **No number from this project should reach a resume until this file has been re-read and is still
-  accurate.**
+- **Tax rates change, and this file dates quickly.** Re-read it and re-verify every rate against a
+  current primary source before quoting any figure from this project.
