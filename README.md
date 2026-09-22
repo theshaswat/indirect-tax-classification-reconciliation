@@ -1,71 +1,122 @@
 # Indirect Tax Classification & Reconciliation Engine
 
-**Status: Phase 1–4 complete.** Data sourced, engine built and verified, reports written and
-available as both Markdown and PDF (`reports/00_EXECUTIVE_SUMMARY`, `01_RECOMMENDATION_MEMO`,
-`02_DATA_DICTIONARY`, `03_SOURCE_REGISTER`, `LIMITATIONS`), dashboard built
-(`dashboards/dashboard.html`). Resume-ready line is in the Executive Summary — **read
-`reports/LIMITATIONS.pdf` once before using it**, since several rates are flagged
-unconfirmed-this-session.
+> A rules-based engine that independently derives the correct indirect-tax treatment for
+> an AP invoice line and flags it when the vendor-master tax code disagrees — the mechanic
+> behind a tax-ops exception queue, across 11 jurisdictions and 20 sourced rate rules.
 
-## What this is
+## Question
 
-A rules-based engine that classifies AP invoice lines by the correct indirect-tax treatment
-(GST, India TDS, US state Sales & Use Tax, EU VAT) and flags exceptions — mirroring the real
-failure mode a tax-ops team manages: *a wrong or stale tax code on the vendor master is the
-most common root cause of an exception queue.*
+The most common root cause of a tax-ops exception queue is not a mis-keyed amount — it is
+a wrong or stale tax code sitting on the vendor master, applied correctly by the system to
+every invoice that vendor sends. What does it take to catch that automatically, and how do
+you avoid a tool that asserts a rate it cannot actually stand behind?
 
-## Scope
+## Findings
 
-- **In scope:** rule-based classification across 11 jurisdictions, 20 rate/category rules, sourced
-  from primary regulatory tables (CBIC, Income Tax Act 1961/Income-tax Act 2025, Tax Foundation's
-  read of state Departments of Revenue, the European Commission's VAT rates database). A synthetic
-  invoice-line test set (60 lines) exercises the engine, including deliberately injected stale/wrong
-  tax codes.
-- **Out of scope:** no real vendor or transaction data exists anywhere for this — every invoice line
-  is synthetic and labelled as such. No claim of SAP/Vertex/OneSource software experience. No local
-  US sales-tax add-ons (county/city) — state base rate only.
+| | |
+|---|---|
+| **Rules sourced** | **20**, across **11 jurisdictions**, each with a citation and an `as_of_date` |
+| Coverage | India GST (post-Sept-2025 four-slab reform) and TDS · US state Sales & Use Tax (CA/NY/IL/TX) · EU VAT (DE/FR/LU/HU/IE/NL) |
+| Test set | **60 synthetic invoice lines**, with a wrong or blank vendor-master code injected on 1 in 3 |
+| **Exception rate detected** | **33.3%** — matching the injected error rate exactly, in every one of the 11 jurisdictions |
+| Rate confidence | **11 of 20** rules confirmed against a primary source in this build; **9 of 20** flagged `stable_fact_verify_before_filing` |
+| Confidence handling | The engine demotes any line resting on an unconfirmed rate to `OK — VERIFY RATE` rather than passing it clean |
 
-## Data
+An engine that reports the error rate it was given is doing the only thing that can be
+verified without real data: proving the matching logic is internally consistent. The
+33.3% is therefore a test result, not a business finding — it says the classifier agrees
+with ground truth on a set where ground truth is known by construction.
 
-`data/raw/tax_rules.csv` — 20 rules, each with a `source` and `as_of_date` column. 11 rows are
-`confirmed_this_session` (pulled and checked in this build); 9 are `stable_fact_verify_before_filing`
-(well-established rates — e.g. Ireland's 23% VAT, India's TDS section rates — not independently
-re-confirmed against a live primary source this session). **The engine itself flags every line that
-relies on an unconfirmed rate** rather than presenting all rates with equal confidence — see the
-`OK — VERIFY RATE` status in the classification output.
+The second column matters more in practice. Nine of the twenty rates are well-established
+figures that were not independently re-confirmed against a live primary source in this
+build. Rather than presenting all twenty with equal confidence, the engine propagates that
+distinction into every line it touches, so a reviewer sees which conclusions rest on a
+checked rate and which do not.
 
-## How it works
+Per-jurisdiction detail: [`outputs/tables/reconciliation_summary.csv`](outputs/tables/reconciliation_summary.csv).
+Full reasoning: [`reports/01_RECOMMENDATION_MEMO.md`](reports/01_RECOMMENDATION_MEMO.md).
 
-1. `src/tax_rules.py` loads the sourced rate table.
-2. `src/generate_synthetic_invoices.py` builds 60 synthetic invoice lines across all 11
-   jurisdictions, injecting a wrong/blank vendor-master tax code on 1 in 3 lines.
-3. `src/classification_engine.py` independently derives the correct tax code per line from the
-   rules table and compares it to the vendor-master code, producing an exception queue
-   (`data/final/exception_queue.csv`) and a reconciliation summary by jurisdiction
-   (`outputs/tables/reconciliation_summary.csv`).
+## Method
 
-Run: `cd src && python3 generate_synthetic_invoices.py && python3 classification_engine.py`
+1. `src/tax_rules.py` loads the sourced rate table, carrying each rule's citation,
+   `as_of_date` and confidence tier.
+2. `src/generate_synthetic_invoices.py` builds 60 invoice lines spanning all 11
+   jurisdictions, injecting a wrong or blank vendor-master tax code on 1 in 3.
+3. `src/classification_engine.py` derives the correct code per line **independently of the
+   code already on the line**, compares the two, and writes an exception queue
+   (`data/final/exception_queue.csv`) plus a reconciliation summary by jurisdiction.
 
-## What broke
+The independence in step 3 is the point: an engine that reads the existing code as an
+input cannot detect that the existing code is wrong.
 
-The first run flagged a 66.7% exception rate — implausibly high. Root cause: the synthetic-data
-generator used the rules table's `tax_type` value ("Sales & Use Tax", "VAT") where the classification
-engine expected the `category` value ("State base rate", "Standard"), so every US and EU line failed
-to match any rule at all and was misclassified as a missing-rule exception. Fixed by aligning the
-generator's category labels to the rules table's actual `category` column; re-run produced the
-expected, deterministic 33.3% exception rate (matching the 1-in-3 error-injection rate exactly),
-confirming the engine's matching logic is now internally consistent.
+## A failure worth recording
 
-## Reports (Phase 3–4)
+The first run returned a 66.7% exception rate — implausibly high, and the reason it was
+worth chasing rather than reporting. Root cause: the synthetic-data generator wrote the
+rules table's `tax_type` value ("Sales & Use Tax", "VAT") into a field where the
+classification engine expected the `category` value ("State base rate", "Standard"). Every
+US and EU line therefore matched no rule at all and was misclassified as a missing-rule
+exception rather than as a code mismatch.
 
-`reports/00_EXECUTIVE_SUMMARY.{md,pdf}`, `01_RECOMMENDATION_MEMO.{md,pdf}`,
-`02_DATA_DICTIONARY.{md,pdf}`, `03_SOURCE_REGISTER.{md,pdf}`, `LIMITATIONS.{md,pdf}`. Dashboard:
-`dashboards/dashboard.html` (exception composition by jurisdiction, status-color coded).
+Aligning the generator's category labels to the rules table's actual `category` column
+produced the expected, deterministic 33.3% — matching the injection rate exactly, in every
+jurisdiction. The failure is recorded because the implausible number is what exposed it:
+a 66.7% rate that had been quietly accepted would have looked like a finding.
 
-## Not done
+## Structure
 
-Re-confirm the 9 `stable_fact_verify_before_filing` rates against a live primary source before any
-number from this project reaches a resume — see `reports/LIMITATIONS.pdf`.
+```
+indirect-tax-classification-reconciliation/
+├── data/
+│   ├── raw/           # tax_rules.csv — 20 rules, each with source + as_of_date
+│   ├── processed/     # synthetic_invoice_lines.csv — the 60-line test set
+│   └── final/         # exception_queue.csv
+├── src/
+│   ├── tax_rules.py                  # sourced rate table loader
+│   ├── generate_synthetic_invoices.py# test-set builder with error injection
+│   ├── classification_engine.py      # independent derivation + reconciliation
+│   └── build_pdf.py                  # renders reports/*.md to PDF
+├── outputs/tables/    # reconciliation_summary.csv — by jurisdiction
+├── dashboards/        # dashboard.html — exception composition by jurisdiction
+└── reports/           # executive summary, memo, data dictionary,
+                       # source register, limitations (.md + .pdf)
+```
+
+## How to run
+
+```bash
+pip install -r requirements.txt
+cd src
+python3 generate_synthetic_invoices.py   # -> data/processed/synthetic_invoice_lines.csv
+python3 classification_engine.py         # -> data/final/exception_queue.csv,
+                                         #    outputs/tables/reconciliation_summary.csv
+python3 build_pdf.py                     # -> reports/*.pdf
+```
+
+## Data and sources
+
+`data/raw/tax_rules.csv` — 20 rules drawn from primary regulatory tables: CBIC for India
+GST, the Income Tax Act 1961 / Income-tax Act 2025 for TDS, the Tax Foundation's
+compilation of state Departments of Revenue for US Sales & Use Tax, and the European
+Commission's VAT rates database for EU VAT. Each row carries a `source`, an `as_of_date`,
+and a confidence tier.
+
+Full register: [`reports/03_SOURCE_REGISTER.md`](reports/03_SOURCE_REGISTER.md).
+Field definitions: [`reports/02_DATA_DICTIONARY.md`](reports/02_DATA_DICTIONARY.md).
+
+## Limitations
+
+Full detail in [`reports/LIMITATIONS.md`](reports/LIMITATIONS.md). Headline items:
+
+- **Every invoice line is synthetic.** No real vendor or transaction data is used anywhere
+  in this project, and the exception rate reflects an injected error rate, not an observed
+  one.
+- **Nine of twenty rates are unconfirmed in this build** and are flagged as such. They
+  should be re-checked against a live primary source before any figure here is relied on.
+- **US coverage is state base rate only** — no county or city add-ons.
+- This demonstrates the reasoning a tax-ops analyst applies (jurisdiction plus
+  transaction type to correct treatment, then flag the mismatch). It is not production tax
+  software, and implies no SAP, Vertex or OneSource experience.
 
 ## Author
 

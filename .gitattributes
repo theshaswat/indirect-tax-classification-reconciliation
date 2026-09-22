@@ -1,0 +1,8 @@
+# Language statistics
+#
+# The engine is Python. The dashboard, PDFs and output tables are built
+# deliverables written by src/, not hand-authored source, so counting them
+# would report this as an HTML project.
+dashboards/*.html   linguist-generated
+reports/*.pdf       linguist-generated
+outputs/**          linguist-generated
