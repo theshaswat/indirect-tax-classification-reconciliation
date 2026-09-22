@@ -1,0 +1,21 @@
+jurisdiction,tax_type,category,rate_pct,condition,source,as_of_date,confidence
+India,GST,Nil-rated essential,0,"Food grains, healthcare services, education services",CBIC GST rate notifications (cbic-gst.gov.in),2025-09-22,confirmed_this_session
+India,GST,Reduced,5,"Essential-but-not-basic goods; select footwear/food categories under revised slab",CBIC GST rate notifications; post 56th GST Council reform,2025-09-22,confirmed_this_session
+India,GST,Standard,18,"General goods and services (post-merger of erstwhile 12% slab into 18%)",CBIC GST rate notifications; post 56th GST Council reform,2025-09-22,confirmed_this_session
+India,GST,Luxury/sin,40,"Premium cars >1200cc petrol / >1500cc diesel, large SUVs, aerated/energy drinks, motorcycles >350cc, tobacco",CBIC GST rate notifications; post 56th GST Council reform,2025-09-22,confirmed_this_session
+India,TDS,194C - Contractor (individual/HUF),1,"Payment to resident individual/HUF contractor, above threshold",Income Tax Act 1961 s.194C (pre 1-Apr-2026 numbering; now Sec 393 table item),2026-04-01,stable_fact_verify_before_filing
+India,TDS,194C - Contractor (other entities),2,"Payment to resident non-individual contractor, above threshold",Income Tax Act 1961 s.194C (pre 1-Apr-2026 numbering; now Sec 393 table item),2026-04-01,stable_fact_verify_before_filing
+India,TDS,194J - Professional fees,10,"Payment to resident professional (legal/medical/architectural/consultancy)",Income Tax Act 1961 s.194J (pre 1-Apr-2026 numbering; now Sec 393 table item),2026-04-01,stable_fact_verify_before_filing
+India,TDS,194J - Technical services,2,"Fees for technical services / call-centre services",Income Tax Act 1961 s.194J (pre 1-Apr-2026 numbering; now Sec 393 table item),2026-04-01,stable_fact_verify_before_filing
+India,TDS,194Q - Purchase of goods,0.1,"Buyer turnover >INR 10cr AND purchase from one seller >INR 50 lakh in FY",Income Tax Act 1961 s.194Q (pre 1-Apr-2026 numbering; now Sec 393 table item),2026-04-01,stable_fact_verify_before_filing
+India,TDS,195 - Foreign remittance (no treaty relief),20,"Royalty/FTS to non-resident absent DTAA relief; treaty rate requires Form 10F + Tax Residency Certificate",Income Tax Act 1961 s.195 (pre 1-Apr-2026 numbering; now Sec 393 table item),2026-04-01,stable_fact_verify_before_filing
+US-CA,Sales & Use Tax,State base rate,7.25,"State-level only; local district add-ons up to ~10.75% not modelled",Tax Foundation - State and Local Sales Tax Rates Midyear 2026,2026-07-01,confirmed_this_session
+US-NY,Sales & Use Tax,State base rate,4.0,"State-level only; NYC combined average ~8.875% not modelled",Tax Foundation - State and Local Sales Tax Rates Midyear 2026,2026-07-01,confirmed_this_session
+US-IL,Sales & Use Tax,State base rate,6.25,"State-level only; Chicago combined ~10.5% since Aug 2026 not modelled",Tax Foundation - State and Local Sales Tax Rates Midyear 2026,2026-07-01,confirmed_this_session
+US-TX,Sales & Use Tax,State base rate,6.25,"State-level only; local add-ons up to 2% not modelled",Widely-reported stable TX state rate; verify at comptroller.texas.gov before filing,2026-01-01,stable_fact_verify_before_filing
+EU-DE,VAT,Standard,19,"Germany standard rate",European Commission VAT rates database; Tax Foundation EU VAT 2026,2026-08-03,confirmed_this_session
+EU-FR,VAT,Standard,20,"France standard rate",European Commission VAT rates database; Tax Foundation EU VAT 2026,2026-08-03,confirmed_this_session
+EU-LU,VAT,Standard,17,"Luxembourg standard rate - lowest in EU",European Commission VAT rates database; Tax Foundation EU VAT 2026,2026-08-03,confirmed_this_session
+EU-HU,VAT,Standard,27,"Hungary standard rate - highest in EU",European Commission VAT rates database; Tax Foundation EU VAT 2026,2026-08-03,confirmed_this_session
+EU-IE,VAT,Standard,23,"Ireland standard rate",Widely-reported stable rate; verify at revenue.ie before filing,2026-01-01,stable_fact_verify_before_filing
+EU-NL,VAT,Standard,21,"Netherlands standard rate",Widely-reported stable rate; verify at belastingdienst.nl before filing,2026-01-01,stable_fact_verify_before_filing
