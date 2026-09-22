@@ -22,16 +22,14 @@ you avoid a tool that asserts a rate it cannot actually stand behind?
 | Rate confidence | **11 of 20** rules confirmed against a primary source in this build; **9 of 20** flagged `stable_fact_verify_before_filing` |
 | Confidence handling | The engine demotes any line resting on an unconfirmed rate to `OK — VERIFY RATE` rather than passing it clean |
 
-An engine that reports the error rate it was given is doing the only thing that can be
-verified without real data: proving the matching logic is internally consistent. The
-33.3% is therefore a test result, not a business finding — it says the classifier agrees
-with ground truth on a set where ground truth is known by construction.
+Recovering the injected rate is a test result rather than a business finding: it says the
+classifier agrees with ground truth on a set where ground truth is known by construction.
+Without real vendor data that is the only property available to verify.
 
-The second column matters more in practice. Nine of the twenty rates are well-established
-figures that were not independently re-confirmed against a live primary source in this
-build. Rather than presenting all twenty with equal confidence, the engine propagates that
-distinction into every line it touches, so a reviewer sees which conclusions rest on a
-checked rate and which do not.
+Nine of the twenty rates are well-established figures that were not independently
+re-confirmed against a live primary source for this build. Rather than presenting all
+twenty with equal confidence, the engine propagates that distinction into every line it
+touches, so a reviewer sees which conclusions rest on a checked rate and which do not.
 
 Per-jurisdiction detail: [`outputs/tables/reconciliation_summary.csv`](outputs/tables/reconciliation_summary.csv).
 Full reasoning: [`reports/01_RECOMMENDATION_MEMO.md`](reports/01_RECOMMENDATION_MEMO.md).
@@ -46,8 +44,8 @@ Full reasoning: [`reports/01_RECOMMENDATION_MEMO.md`](reports/01_RECOMMENDATION_
    code already on the line**, compares the two, and writes an exception queue
    (`data/final/exception_queue.csv`) plus a reconciliation summary by jurisdiction.
 
-The independence in step 3 is the point: an engine that reads the existing code as an
-input cannot detect that the existing code is wrong.
+Step 3 has to derive the code independently, because an engine that reads the existing
+code as an input cannot detect that the existing code is wrong.
 
 ## A failure worth recording
 
@@ -60,8 +58,8 @@ exception rather than as a code mismatch.
 
 Aligning the generator's category labels to the rules table's actual `category` column
 produced the expected, deterministic 33.3% — matching the injection rate exactly, in every
-jurisdiction. The failure is recorded because the implausible number is what exposed it:
-a 66.7% rate that had been quietly accepted would have looked like a finding.
+jurisdiction. Had the 66.7% been accepted rather than chased, it would have been reported
+as a finding about tax-code hygiene when it was a field-mapping error.
 
 ## Structure
 
