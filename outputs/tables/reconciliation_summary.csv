@@ -1,0 +1,12 @@
+jurisdiction,total_lines,exceptions,ok,ok_verify_rate,exception_rate_pct
+EU-DE,3,1,2,0,33.3
+EU-FR,3,1,2,0,33.3
+EU-HU,3,1,2,0,33.3
+EU-IE,3,1,0,2,33.3
+EU-LU,3,1,2,0,33.3
+EU-NL,3,1,0,2,33.3
+India,30,10,8,12,33.3
+US-CA,3,1,2,0,33.3
+US-IL,3,1,2,0,33.3
+US-NY,3,1,2,0,33.3
+US-TX,3,1,0,2,33.3
