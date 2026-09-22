@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indirect Tax Classification — Exception Composition by Jurisdiction</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --page-plane: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --gridline: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --good: #0ca30c;
+    --warning: #fab219;
+    --critical: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --page-plane: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #898781;
+      --gridline: #2c2c2a;
+      --baseline: #383835;
+      --border: rgba(255,255,255,0.10);
+      --good: #0ca30c;
+      --warning: #fab219;
+      --critical: #d03b3b;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1: #1a1a19;
+    --page-plane: #0d0d0d;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --gridline: #2c2c2a;
+    --baseline: #383835;
+    --border: rgba(255,255,255,0.10);
+    --good: #0ca30c;
+    --warning: #fab219;
+    --critical: #d03b3b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page-plane); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .viz-root { background: var(--page-plane); padding: 24px 16px; }
+  .card {
+    max-width: 860px; margin: 0 auto; background: var(--surface-1);
+    border: 1px solid var(--border); border-radius: 12px; padding: 24px 28px;
+  }
+  h1 { font-size: 17px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
+  .subtitle { font-size: 13px; color: var(--text-secondary); margin: 0 0 20px; line-height: 1.5; }
+  .legend { display: flex; flex-wrap: wrap; column-gap: 18px; row-gap: 8px; margin-bottom: 18px; font-size: 12.5px; color: var(--text-secondary); }
+  .legend-item { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+  .row { display: grid; grid-template-columns: 90px 1fr 46px; align-items: center; gap: 10px; margin-bottom: 7px; }
+  .row-label { font-size: 12.5px; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+  .bar-track { position: relative; height: 20px; border-radius: 4px; overflow: hidden; background: var(--gridline); display: flex; }
+  .seg { height: 100%; position: relative; }
+  .seg:not(:last-child) { border-right: 2px solid var(--surface-1); }
+  .pct-label { font-size: 11.5px; color: var(--text-muted); text-align: right; font-variant-numeric: tabular-nums; }
+  .seg:hover { filter: brightness(1.08); cursor: default; }
+  .footnote { margin-top: 18px; font-size: 11.5px; color: var(--text-muted); line-height: 1.6; border-top: 1px solid var(--gridline); padding-top: 12px; overflow-wrap: anywhere; }
+  .footnote code { word-break: break-all; }
+  .group-header { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin: 16px 0 8px; }
+  .group-header:first-of-type { margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="viz-root">
+  <div class="card">
+    <h1>Exception Composition by Jurisdiction</h1>
+    <p class="subtitle">60 synthetic invoice lines, classified against 20 sourced tax rules across 11 jurisdictions.
+    Every jurisdiction lands on exactly 33.3% exceptions — the validation gate. The mix of "confirmed OK" vs.
+    "OK but verify the rate" varies meaningfully, and prioritizes which jurisdictions to re-confirm first.</p>
+
+    <div class="legend">
+      <div class="legend-item"><span class="swatch" style="background:var(--good)"></span>OK — confirmed rate</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--warning)"></span>OK — verify rate</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--critical)"></span>Exception</div>
+    </div>
+
+    <div id="chart"></div>
+
+    <div class="footnote">
+      Source: <code>outputs/tables/reconciliation_summary.csv</code>. "OK — verify rate" jurisdictions
+      (EU-IE, EU-NL, US-TX, and a large share of India) rely on rules flagged
+      <code>stable_fact_verify_before_filing</code> — re-confirm these first before any real use.
+    </div>
+  </div>
+</div>
+
+<script>
+const data = [
+  {j: "India",  ok: 8, verify: 12, exc: 10, total: 30},
+  {j: "EU-DE",  ok: 2, verify: 0,  exc: 1,  total: 3},
+  {j: "EU-FR",  ok: 2, verify: 0,  exc: 1,  total: 3},
+  {j: "EU-HU",  ok: 2, verify: 0,  exc: 1,  total: 3},
+  {j: "EU-LU",  ok: 2, verify: 0,  exc: 1,  total: 3},
+  {j: "EU-IE",  ok: 0, verify: 2,  exc: 1,  total: 3},
+  {j: "EU-NL",  ok: 0, verify: 2,  exc: 1,  total: 3},
+  {j: "US-CA",  ok: 2, verify: 0,  exc: 1,  total: 3},
+  {j: "US-IL",  ok: 2, verify: 0,  exc: 1,  total: 3},
+  {j: "US-NY",  ok: 2, verify: 0,  exc: 1,  total: 3},
+  {j: "US-TX",  ok: 0, verify: 2,  exc: 1,  total: 3},
+];
+
+const chart = document.getElementById("chart");
+for (const d of data) {
+  const okPct = (d.ok / d.total) * 100;
+  const verifyPct = (d.verify / d.total) * 100;
+  const excPct = (d.exc / d.total) * 100;
+  const row = document.createElement("div");
+  row.className = "row";
+  row.innerHTML = `
+    <div class="row-label">${d.j}</div>
+    <div class="bar-track">
+      <div class="seg" style="width:${okPct}%; background:var(--good)" title="${d.j}: OK confirmed — ${d.ok} of ${d.total} lines (${okPct.toFixed(1)}%)"></div>
+      <div class="seg" style="width:${verifyPct}%; background:var(--warning)" title="${d.j}: OK, verify rate — ${d.verify} of ${d.total} lines (${verifyPct.toFixed(1)}%)"></div>
+      <div class="seg" style="width:${excPct}%; background:var(--critical)" title="${d.j}: Exception — ${d.exc} of ${d.total} lines (${excPct.toFixed(1)}%)"></div>
+    </div>
+    <div class="pct-label">${excPct.toFixed(1)}%</div>
+  `;
+  chart.appendChild(row);
+}
+</script>
+</body>
+</html>
