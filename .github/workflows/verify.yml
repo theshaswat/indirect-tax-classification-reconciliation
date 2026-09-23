@@ -1,0 +1,57 @@
+name: verify
+
+# Everything here is deterministic end to end, which is unusual and worth using.
+# The invoice lines are synthetic and generated under random.seed(42), the rate
+# rules are a committed CSV, and the engine is pure logic -- so CI can regenerate
+# the data, re-run the classification and re-render the reports, and every
+# committed artifact must come back byte for byte. There is no tolerance here and
+# there does not need to be.
+#
+# That makes the check strict in a useful way: it fails on a rule edited without
+# rerunning the engine, on an exception queue edited by hand, and on a figure
+# changed in a report but not in the analysis behind it.
+#
+# The PDFs are only comparable because src/build_pdf.py sets rl_config.invariant;
+# reportlab otherwise writes a wall-clock timestamp and a random document ID into
+# each one.
+#
+# The headline claim -- a 33.3% exception rate matching the 1-in-3 error injection
+# rate exactly -- is printed by the engine rather than stored, so it is asserted
+# against the engine's own output. An earlier version of this project had that
+# match broken by a bug in the data generator, so it is worth guarding.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Regenerate the data, re-run the engine, re-render the reports
+        working-directory: src
+        run: |
+          python generate_synthetic_invoices.py
+          python classification_engine.py | tee /tmp/engine.txt
+          python build_pdf.py
+
+      - name: Every committed artifact reproduces exactly
+        run: git diff --exit-code -- data outputs reports
+
+      - name: Exception rate still matches the injected error rate
+        run: |
+          grep -q "Classified 60 lines. 20 EXCEPTION (33.3%)" /tmp/engine.txt \
+            || { echo "::error::the 33.3% exception rate no longer matches the 1-in-3 injection rate"; cat /tmp/engine.txt; exit 1; }
+          echo "33.3% holds: 20 of 60"
